@@ -12,18 +12,10 @@ const fonter        = require('gulp-fonter');
 const ttf2woff2     = require('gulp-ttf2woff2');
 const include       = require('gulp-include');
 
-function browsersync() {
-  browserSync.init ({
-    server: { baseDir: 'app/' },
-    notify: false,
-    online: true,
-  });
-}
-
 function pages() {
   return src('app/pages/*.html')
   .pipe(include({
-    includePaths : 'app/parts/'
+    includePaths : 'app/parts'
   }))
   .pipe(dest('app'))
   .pipe(browserSync.stream())
@@ -47,10 +39,15 @@ function styles() {
 }
 
 function startwatch() {
+  browserSync.init ({
+    server: { baseDir: 'app/' },
+    notify: false,
+    online: true,
+  });
   watch ('app/scss/style.scss', styles);
   watch ('app/images/src/**/*', images);
   watch (['app/**/*.js','!app/**/*.min.js'], scripts);
-  watch (['app/components/*','app/pages/*'], pages);
+  watch (['app/parts/*','app/pages/*'], pages);
   watch ('app/**/*.html').on('change', browserSync.reload)
 }
 
@@ -61,10 +58,10 @@ function cleanDist() {
 
 function images() {
 	return src(['app/images/src/**/*'])
-		.pipe(changed('app/images/dist'))
-		.pipe(imagemin())
-		.pipe(dest('app/images/dist'))
-		.pipe(browserSync.stream())
+  .pipe(changed('app/images/dist'))
+  .pipe(imagemin())
+  .pipe(dest('app/images/dist'))
+  .pipe(browserSync.stream())
 }
 
 function fonts() {
@@ -74,7 +71,7 @@ function fonts() {
   }))
   .pipe(src('app/fonts/*.ttf'))
   .pipe(ttf2woff2())
-  .pipe(dest('app/fonts'))
+  .pipe(dest('app/fonts/'))
 }
 
 function building() {
@@ -90,13 +87,12 @@ function building() {
 }
 
 
-exports.browsersync = browsersync;
 exports.scripts     = scripts;
 exports.styles      = styles;
 exports.images      = images;
 exports.fonts       = fonts;
-exports.building    = building;
 exports.pages       = pages;
+exports.building    = building;
 
 exports.build       = series(cleanDist, images, building);
-exports.default     = parallel(styles, scripts, images, pages, browsersync, startwatch);
+exports.default     = parallel(styles, scripts, images, pages, startwatch);
